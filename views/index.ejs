@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <title>Naufal - YouTube Download</title>
+</head>
+
+<body>
+    <div class="top-container">
+        <form action="/convert-mp3" method="POST" id="form">
+            <h1><i class="fab fa-youtube"></i>YouTube mp3 by nopal</h1>
+            <h4>Masukkin link videonya</h4>
+            <div>
+                <input type="text" name="videoID" placeholder="Masukkin link video YouTube nya disini">
+                <button id="convert-btn">Ubah ke mp3</button>
+                <% if(typeof success !="undefined" && success) { %>
+                    <div class="success">
+                        <p>Judul lagu : <%= song_title %>
+                        </p>
+                        <iframe width="400" height="200" src="https://www.youtube.com/embed/<%= videoId %>"
+                            title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+
+                        <a href="<%= song_link %>"><button id="download-btn">Download</button></a>
+                    </div>
+                    <% } else if(typeof success !="undefined" && !success) { %>
+                        <p>
+                            <%= message %>
+                        </p>
+                        <%}%>
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
