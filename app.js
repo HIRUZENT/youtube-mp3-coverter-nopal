@@ -7,12 +7,10 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ---------- SETUP PATH ABSOLUTE UNTUK VIEWS DAN PUBLIC ----------
-const __dirname = path.resolve(); // penting untuk serverless environment
-app.set("views", path.join(__dirname, "views"));
+// ---------- SETUP UNTUK VIEWS DAN PUBLIC ----------
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 app.use(express.static(path.join(__dirname, "public")));
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
