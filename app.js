@@ -1,14 +1,18 @@
 // ---------- REQUIRED PACKAGES ----------
 const express = require("express");
 const fetch = require("node-fetch");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ---------- SETUP ----------
+// ---------- SETUP PATH ABSOLUTE UNTUK VIEWS DAN PUBLIC ----------
+const __dirname = path.resolve(); // penting untuk serverless environment
+app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -18,14 +22,14 @@ app.get("/", (req, res) => {
 });
 
 app.post("/convert-mp3", async (req, res) => {
-  let videoId = req.body.videoID.trim();
+  let videoId = req.body.videoID?.trim();
 
-  // Deteksi format link YouTube
-  if (videoId.includes("v=")) {
+  // --- Parsing berbagai format link YouTube ---
+  if (videoId && videoId.includes("v=")) {
     // Format: https://www.youtube.com/watch?v=xxxx
     const urlParams = new URLSearchParams(videoId.split("?")[1]);
     videoId = urlParams.get("v");
-  } else if (videoId.includes("youtu.be/")) {
+  } else if (videoId && videoId.includes("youtu.be/")) {
     // Format: https://youtu.be/xxxx?si=...
     const parts = videoId.split("youtu.be/");
     if (parts[1]) {
@@ -33,13 +37,13 @@ app.post("/convert-mp3", async (req, res) => {
     }
   }
 
-  // Validasi
+  // --- Validasi input ---
   if (!videoId) {
     return res.render("index", { success: false, message: "Link videonya belum dimasukkin" });
   }
 
   try {
-    // Fetch ke RapidAPI
+    // --- Fetch ke RapidAPI ---
     const fetchAPI = await fetch(`https://youtube-mp36.p.rapidapi.com/dl?id=${videoId}`, {
       method: "GET",
       headers: {
@@ -52,24 +56,26 @@ app.post("/convert-mp3", async (req, res) => {
     console.log(fetchResponse);
 
     if (fetchResponse.status === "ok") {
-      res.render("index", {
+      return res.render("index", {
         success: true,
         song_title: fetchResponse.title,
         song_link: fetchResponse.link,
         videoId: videoId
       });
     } else {
-      res.render("index", {
-        success: false,
-        message: fetchResponse.message
-      });
+      return res.render("index", { success: false, message: fetchResponse.message });
     }
 
   } catch (error) {
     console.error("Error saat fetch:", error);
-    res.render("index", { success: false, message: "Terjadi kesalahan server" });
+    return res.render("index", { success: false, message: "Terjadi kesalahan server." });
   }
 });
 
-// ---------- START SERVER ----------
-app.listen(PORT, () => console.log(`Server berjalan di http://localhost:${PORT}`));
+// ---------- EXPORT UNTUK VERCEL ----------
+module.exports = app;
+
+// ---------- LOCAL DEV ONLY ----------
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Server berjalan di http://localhost:${PORT}`));
+}
